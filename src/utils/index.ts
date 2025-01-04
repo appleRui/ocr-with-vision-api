@@ -1,0 +1,21 @@
+import axios from "axios";
+
+/**
+ * @param url ファイルURL
+ * @param headerOption リクエストヘッダー
+ * @returns Base64でエンコードされたファイル情報
+ */
+const featchFileByffer = async (url: string, headerOption?: {}) => {
+    const response = await axios.get(url, {
+        ...headerOption,
+        responseType: "arraybuffer",
+      });
+
+    if(response.status == 200) {
+        return response.data.toString("base64");
+    }
+}
+
+export {
+    featchFileByffer
+}
