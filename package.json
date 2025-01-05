@@ -4,7 +4,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node -r tsconfig-paths/register dist/index.js"
   },
   "dependencies": {
     "@google-cloud/vision": "^4.3.2",
@@ -13,10 +13,12 @@
     "axios": "^1.7.9",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
-    "hono": "^4.6.15"
+    "hono": "^4.6.15",
+    "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
-    "tsx": "^4.7.1"
+    "tsx": "^4.7.1",
+    "typescript": "^5.7.2"
   }
 }

@@ -1,27 +1,33 @@
-FROM node:22.12.0-alpine AS base
+# ============================================================
+# 1. Builder Stage
+# ============================================================
+FROM node:22 AS builder
 
-FROM base AS builder
-
-RUN apk add --no-cache gcompat
 WORKDIR /app
 
-COPY package.json yarn.lock tsconfig.json src ./
+COPY package.json pnpm-lock.yaml ./
 
-RUN yarn install --frozen-lockfile && \
-    yarn build && \
-    yarn install --production --frozen-lockfile
+RUN npm install -g pnpm
+RUN pnpm install
 
-FROM base AS runner
+COPY tsconfig.json ./
+COPY src ./src
+
+RUN pnpm run build
+
+# ============================================================
+# 2. Production Stage
+# ============================================================
+FROM node:22 AS production
+
 WORKDIR /app
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 hono
+COPY package.json pnpm-lock.yaml ./
+RUN npm install -g pnpm
+RUN pnpm install --prod
 
-COPY --from=builder --chown=hono:nodejs /app/node_modules /app/node_modules
-COPY --from=builder --chown=hono:nodejs /app/dist /app/dist
-COPY --from=builder --chown=hono:nodejs /app/package.json /app/package.json
+COPY --from=builder /app/dist ./dist
 
-USER hono
 EXPOSE 3333
 
-CMD ["node", "/app/dist/index.js"]
+CMD ["node", "./dist/index.js"]

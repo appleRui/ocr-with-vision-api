@@ -1,15 +1,7 @@
+import { createLogger } from "../logger.js";
 import { WebClient } from "@slack/web-api";
-import { format } from "date-fns";
 
-const getCurrentTimestamp = () => format(new Date(), "yyyy-MM-dd HH:mm:ss");
-
-const logError = (message: string, error?: unknown) => {
-  console.error(`[ERROR] ${getCurrentTimestamp()} ${message}`, error || "");
-};
-
-const logInfo = (message: string, data?: unknown) => {
-  console.log(`[INFO] ${getCurrentTimestamp()} ${message}`, data || "");
-};
+const logger = createLogger('SlackClient')
 
 export class SlackClient {
   private slackClient: WebClient;
@@ -21,7 +13,7 @@ export class SlackClient {
     ) {
       throw new Error("SLACK_BOT_TOKENが存在しません");
     }
-    this.slackClient = new WebClient();
+    this.slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
   }
 
   public getSlackToken() {
@@ -36,13 +28,13 @@ export class SlackClient {
     try {
       const response = await this.slackClient.files.info({ file: fileId });
       if (response.ok && response.file) {
-        logInfo("Slackからファイル情報を正常に取得しました");
+        logger.info("Slackからファイル情報を正常に取得しました");
         return response.file;
       } else {
-        logError(JSON.stringify(response.error));
+        logger.error(JSON.stringify(response.error));
       }
     } catch (error) {
-      logError("ファイル情報の取得に失敗しました", error);
+      logger.error(`ファイル情報の取得に失敗しました: ${error}`);
     }
     return null;
   }
@@ -57,10 +49,10 @@ export class SlackClient {
       if (response.ok && response.messages) {
         return response.messages;
       } else {
-        logError(JSON.stringify(response.error));
+        logger.error(JSON.stringify(response.error));
       }
     } catch (error) {
-      logError("元のメッセージの取得に失敗しました", error);
+      logger.error(`元のメッセージの取得に失敗しました: ${error}`);
     }
 
     return null;
@@ -75,10 +67,10 @@ export class SlackClient {
       });
 
       if (!response.ok) {
-        logError(JSON.stringify(response.errors));
+        logger.error(JSON.stringify(response.errors));
       }
     } catch (error) {
-      logError("Slackへのメッセージ投稿に失敗しました", error);
+      logger.error(`Slackへのメッセージ投稿に失敗しました: ${error}`);
     }
   }
 }
