@@ -32,6 +32,7 @@ export class SlackClient {
         return response.file;
       } else {
         logger.error(JSON.stringify(response.error));
+        return null;
       }
     } catch (error) {
       logger.error(`ファイル情報の取得に失敗しました: ${error}`);
@@ -46,10 +47,11 @@ export class SlackClient {
         limit: 10,
       });
 
-      if (response.ok && response.messages) {
+      if (response.ok && response.messages && response.messages.length > 0) {
         return response.messages;
       } else {
-        logger.error(JSON.stringify(response.error));
+        logger.error(`Slackからスレッド履歴を取得できませんでした: ${response.error}`);
+        return null;
       }
     } catch (error) {
       logger.error(`元のメッセージの取得に失敗しました: ${error}`);

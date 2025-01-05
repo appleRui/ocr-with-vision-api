@@ -30,7 +30,7 @@ app.get("/ping", (c) => {
 });
 
 app.post("/slack/events", async (c) => {
-  
+
   const retryNum = c.req.header("X-Slack-Retry-Num");
   if (retryNum) {
     logger.info(`リトライリクエストを無視しました: ${retryNum}`);
@@ -49,13 +49,13 @@ app.post("/slack/events", async (c) => {
     const { file_id: fileId, channel_id: channelId } = body.event;
 
     const fileInfo = await slackClient.findFileByFileId(fileId);
-    if (!fileInfo) {
+    if (!fileInfo?.url_private) {
       logger.info("ファイル情報の取得に失敗しました");
       return c.json(null, 200);
     }
 
     const messages = await slackClient.findTheadHistoryByChannelId(channelId);
-    if (messages == null) {
+    if (!messages) {
       logger.info("スレッドが取得できませんでした");
       return c.json(null, 200);
     };
@@ -63,19 +63,13 @@ app.post("/slack/events", async (c) => {
     const targetMessage = messages.find((message: any) =>
       message.files?.some((file: any) => file.id === fileId)
     );
-
     if (!targetMessage?.ts) {
       logger.info("元のメッセージが見つかりませんでした");
       return c.json(null, 200);
     }
-
-    if (!fileInfo.url_private) {
-      logger.info("画像URLが提供されていません");
-      return c.json(null, 200);
-    }
     
     const response = await axios.get(fileInfo.url_private, {
-      headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` },
+      headers: { Authorization: `Bearer ${slackClient.getSlackToken()}` },
       responseType: "arraybuffer",
     });
     
