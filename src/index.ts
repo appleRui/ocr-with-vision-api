@@ -133,7 +133,7 @@ const postVisionApi = async (imageUrl?: string): Promise<string | null> => {
     }
 
     const text = textAnnotations[0]?.description?.trim() || "";
-    customLogger.info(`OCR解析結果: ${text.replace('\n', ', ')}`);
+    customLogger.info(`OCR解析結果: ${text.split('\n').join(', ')}`);
     return text;
   } catch (error) {
     customLogger.error(`Google Vision APIでの画像解析に失敗しました: ${error}`);
