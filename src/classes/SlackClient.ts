@@ -69,6 +69,8 @@ export class SlackClient {
       if (!response.ok) {
         logger.error(JSON.stringify(response.errors));
       }
+
+      return response.ok;
     } catch (error) {
       logger.error(`Slackへのメッセージ投稿に失敗しました: ${error}`);
     }

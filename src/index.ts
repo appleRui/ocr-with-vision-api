@@ -30,8 +30,8 @@ app.get("/ping", (c) => {
 });
 
 app.post("/slack/events", async (c) => {
+  
   const retryNum = c.req.header("X-Slack-Retry-Num");
-
   if (retryNum) {
     logger.info(`リトライリクエストを無視しました: ${retryNum}`);
     return c.json(null, 200);
@@ -85,10 +85,17 @@ app.post("/slack/events", async (c) => {
       return c.json(null, 200);
     }
 
-    await slackClient.postMessage(channelId, targetMessage.ts, result);
+    const postMessageResult = await slackClient.postMessage(channelId, targetMessage.ts, result);
+    if (!postMessageResult) {
+      logger.info("スレッド投稿に失敗しました")
+      return c.json(null, 200);
+    }
+    
+    logger.info("プロセスを正常に処理しました")
     return c.json(null, 200);
   }
 
+  logger.info("イベントタイプに一致しないためスキップしました")
   return c.json(null, 200);
 });
 
