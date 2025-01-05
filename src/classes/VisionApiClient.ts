@@ -22,7 +22,7 @@ export class VisionAPiClient {
     }
 
     const text = textAnnotations[0]?.description?.trim() || "";
-    logger.info(`OCR解析結果: ${text}`);
+    logger.info(`OCR解析結果: ${text.split("\n").join(", ")}`);
     return text;
   }
 }

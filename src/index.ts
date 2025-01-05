@@ -6,7 +6,6 @@ import axios from "axios";
 import { serve } from "@hono/node-server";
 import { createLogger } from "./logger.js";
 import { SlackClient } from "./classes/SlackClient.js";
-import { featchFileByffer } from "./utils/index.js";
 import { VisionAPiClient } from "./classes/VisionApiClient.js";
 
 dotenv.config();
@@ -57,7 +56,7 @@ app.post("/slack/events", async (c) => {
 
     const messages = await slackClient.findTheadHistoryByChannelId(channelId);
     if (messages == null) {
-      logger.info('スレッドが取得できませんでした')
+      logger.info("スレッドが取得できませんでした");
       return c.json(null, 200);
     };
 
@@ -74,14 +73,13 @@ app.post("/slack/events", async (c) => {
       logger.info("画像URLが提供されていません");
       return c.json(null, 200);
     }
-
-    const base64Content = await featchFileByffer(fileInfo.url_private, {
-      Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`,
+    
+    const response = await axios.get(fileInfo.url_private, {
+      headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` },
       responseType: "arraybuffer",
     });
-
-    const result = await visionClient.getTextAnnotation(base64Content);
-
+    
+    const result = await visionClient.getTextAnnotation(response.data.toString("base64"));
     if (!result) {
       logger.info("OCRで文字列が取得できませんでした");
       return c.json(null, 200);
